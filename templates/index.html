@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Works log</h2>
+{% if current_user.is_authenticated %}
+    <a href="jobs" class="btn btn-secondary">Add job</a>
+{% endif %}
+{% for job in jobs%}
+    <h3>Action # {{loop.index}}</h3>
+    <div class="table-container">
+        <table class="cabin-table">
+            <tr>
+                <th width="350px">Title of activity</th>
+                <th width="200px">Team leader</th>
+                <th width="150px">Duration</th>
+                <th width="150px">List of collaborators</th>
+                <th width="200px">Is finished</th>
+            </tr>
+            <tr>
+                <td>{{job.job}}</td>
+                <td>{{" ".join(names[job.team_leader])}}</td>
+                <td>{{job.work_size}} hours</td>
+                <td>{{job.collaborators}}</td>
+                {% if job.is_finished %}
+                    <td style="background-color: #FFF0F2">Is finished</td>
+                {% else %}
+                    <td style="background-color: #FFF0F2">Is not finished</td>
+                {% endif %}
+            </tr>
+        </table>
+</div>
+{% endfor %}
+{% endblock %}
