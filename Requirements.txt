@@ -1,0 +1,4 @@
+flask
+flask_login
+wtforms
+flask_wtf
