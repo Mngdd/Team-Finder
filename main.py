@@ -1,10 +1,10 @@
 from flask import Flask, render_template, redirect, make_response, jsonify
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from data.users import User
-from data.jobs import Jobs
-from data import db_session, jobs_api
-from forms.user import RegisterForm, LoginForm
+from data.project import Project
+from data import db_session, project_api
+from forms.user import RegisterForm, LoginForm, ProjectForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -23,8 +23,8 @@ def bad_request(_):
 
 
 def main():
-    db_session.global_init("db/mars.db")
-    app.register_blueprint(jobs_api.blueprint)
+    db_session.global_init("db/team_finder.db")
+    app.register_blueprint(project_api.blueprint)
     app.run()
 
 
@@ -37,10 +37,10 @@ def load_user(user_id):
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
-    jobs = db_sess.query(Jobs).all()
+    projects = db_sess.query(Project).all()
     users = db_sess.query(User).all()
-    names = {user.id: (user.surname, user.name) for user in users}
-    return render_template("index.html", jobs=jobs, names=names)
+    names = {user.id: user.nickname for user in users}
+    return render_template("index.html", projects=projects, names=names)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -48,27 +48,23 @@ def reqister():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
+            return render_template('register.html', title='Register',
                                    form=form,
-                                   message="Пароли не совпадают")
+                                   message="Passwords don't match")
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Такой пользователь уже есть")
+                                   message="User already exists")
         user = User()
-        user.surname = form.surname.data
-        user.name = form.name.data
+        user.nickname = form.nickname.data
         user.email = form.email.data
-        user.age = form.age.data
-        user.position = form.position.data
-        user.specialty = form.specialty.data
-        user.address = form.address.data
+        user.github_profile = form.github_profile.data
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
         return redirect('/login')
-    return render_template('register.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Register', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -81,9 +77,25 @@ def login():
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
         return render_template('login.html',
-                               message="Неправильный логин или пароль",
+                               message="Incorrect login or password",
                                form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+    return render_template('login.html', title='Login', form=form)
+
+
+@app.route('/add_project', methods=['GET', 'POST'])
+def add_project():
+    form = ProjectForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        project = Project()
+        project.team_leader = current_user.id
+        project.title = form.title.data
+        project.description = form.description.data
+        project.collaborators = form.collaborators.data
+        db_sess.add(project)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_project.html', title='Add project', form=form)
 
 
 @app.route('/logout')
