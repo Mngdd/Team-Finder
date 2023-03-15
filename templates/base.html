@@ -14,20 +14,17 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-light bg-light">
-        <span class="navbar-brand mb-0 h1">Миссия Колонизация Марса</span>
-        <a class="navbar-brand" href="#">Mars One</a>
-
-        {% if current_user.is_authenticated %}
-            <a class="navbar-brand" href="/logout">{{ current_user.name }} {{ current_user.surname }}</a>
-        {% else %}
-            <p>
-                <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
-                <a class="btn btn-success" href="/login">Войти</a>
-            </p>
-        {% endif %}
+    <nav class="navbar navbar-light bg-light justify-content-between">
+        <a class="navbar-brand"> </a>
+        <form class="form-inline">
+            {% if current_user.is_authenticated %}
+                <a href="/logout"><button type="button" class="btn btn-secondary">{{ current_user.name }} {{ current_user.surname }}</button></a>
+            {% else %}
+                <a href="/register"><button type="button" class="btn btn-light">Зарегистрироваться</button></a>
+                <a href="/login"><button type="button" class="btn btn-light">Войти</button></a>
+            {% endif %}
+        </form>
     </nav>
-    <h4>И на Марсе будут яблони цвести!</h4>
     <main role="main" class="container">
         {% block content %}{% endblock %}
     </main>
