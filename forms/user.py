@@ -1,15 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, BooleanField, SubmitField, StringField, IntegerField, TextAreaField, \
+from wtforms import EmailField, PasswordField, BooleanField, SubmitField, StringField, TextAreaField, \
     SelectMultipleField
 from wtforms.validators import DataRequired
 
 
 class RegisterForm(FlaskForm):
     email = EmailField('Email', validators=[DataRequired()])
+    nickname = StringField('Nickname', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     password_again = PasswordField('Repeat password', validators=[DataRequired()])
-    nickname = StringField('Nickname', validators=[DataRequired()])
-    github_profile = StringField('Github profile', validators=[DataRequired()])
     submit = SubmitField('Register')
 
 
@@ -23,6 +22,6 @@ class LoginForm(FlaskForm):
 class ProjectForm(FlaskForm):
     title = StringField('Project title', validators=[DataRequired()])
     description = TextAreaField('Project description', validators=[DataRequired()])
-    collaborators = IntegerField('Number of collaborators', validators=[DataRequired()])
-    tags = SelectMultipleField('Tags')
+    # tags = SelectMultipleField('Tags', choices=[tag['tag'] for tag in
+    #                                             get('http://127.0.0.1:5000/api/tags').json()['tags']])
     submit = SubmitField('Add project')

@@ -1,30 +1,27 @@
-from flask import Flask, render_template, redirect, make_response, jsonify
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask import Flask, render_template, redirect
+from flask_login import LoginManager, login_required, logout_user, current_user, login_user
+from flask_restful import Api
+from requests import get, post, delete
 
+from data import db_session, users_resourse, projects_resourse, tags_resourse
 from data.users import User
-from data.project import Project
-from data import db_session, project_api
 from forms.user import RegisterForm, LoginForm, ProjectForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+api = Api(app, catch_all_404s=True)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
-
-@app.errorhandler(400)
-def bad_request(_):
-    return make_response(jsonify({'error': 'Bad Request'}), 400)
-
-
 def main():
     db_session.global_init("db/team_finder.db")
-    app.register_blueprint(project_api.blueprint)
+    api.add_resource(users_resourse.UsersListResource, '/api/users')
+    api.add_resource(users_resourse.UsersResource, '/api/users/<int:user_id>')
+    api.add_resource(projects_resourse.ProjectsListResource, '/api/projects')
+    api.add_resource(projects_resourse.ProjectsResource, '/api/projects/<int:project_id>')
+    api.add_resource(tags_resourse.TagsListResource, '/api/tags')
+    api.add_resource(tags_resourse.TagsResource, '/api/tags/<int:tag_id>')
     app.run()
 
 
@@ -35,40 +32,38 @@ def load_user(user_id):
 
 
 @app.route("/")
-def index():
-    db_sess = db_session.create_session()
-    projects = db_sess.query(Project).all()
-    users = db_sess.query(User).all()
-    names = {user.id: user.nickname for user in users}
-    return render_template("index.html", projects=projects, names=names)
+def index():  # Main page displays available projects
+    projects = get('http://127.0.0.1:5000/api/projects').json()['projects']
+    names = {user['id']: user['nickname'] for user in get('http://127.0.0.1:5000/api/users').json()['users']}
+    tags = {tag['id']: tag['tag'] for tag in get('http://127.0.0.1:5000/api/tags').json()['tags']}
+    for project in projects:
+        project['team_leader'] = names[project['team_leader']]
+        project['collaborators'] = ', '.join(names[int(user_id)] for user_id in project['collaborators'].split())
+        project['tags'] = ', '.join(tags[int(tag_id)] for tag_id in project['tags'].split())
+    return render_template("index.html", projects=projects)
 
 
 @app.route('/register', methods=['GET', 'POST'])
-def reqister():
+def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Register',
                                    form=form,
                                    message="Passwords don't match")
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
+        if post('http://127.0.0.1:5000/api/users',
+                json={'email': form.email.data,
+                      'password': form.password.data,
+                      'nickname': form.nickname.data}).json().get('message', False):
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="User already exists")
-        user = User()
-        user.nickname = form.nickname.data
-        user.email = form.email.data
-        user.github_profile = form.github_profile.data
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Register', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login():  # flask_login wouldn't let make it the RESTful way
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -79,23 +74,24 @@ def login():
         return render_template('login.html',
                                message="Incorrect login or password",
                                form=form)
-    return render_template('login.html', title='Login', form=form)
+    return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/add_project', methods=['GET', 'POST'])
-def add_project():
-    form = ProjectForm()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        project = Project()
-        project.team_leader = current_user.id
-        project.title = form.title.data
-        project.description = form.description.data
-        project.collaborators = form.collaborators.data
-        db_sess.add(project)
-        db_sess.commit()
-        return redirect('/')
-    return render_template('add_project.html', title='Add project', form=form)
+# @app.route('/add_project', methods=['GET', 'POST'])
+# def add_project():
+#     form = ProjectForm()
+#     if form.validate_on_submit():
+#         db_sess = db_session.create_session()
+#         project = Project()
+#         project.team_leader = current_user.id
+#         project.title = form.title.data
+#         project.description = form.description.data
+#         project.collaborators = form.collaborators.data
+#         project.tags = ','.join(form.tags.data)
+#         db_sess.add(project)
+#         db_sess.commit()
+#         return redirect('/')
+#     return render_template('add_project.html', title='Add project', form=form)
 
 
 @app.route('/logout')
