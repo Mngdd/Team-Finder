@@ -6,18 +6,20 @@
     <a href="add_project" class="btn btn-secondary">Add project</a>
 {% endif %}
 {% for project in projects%}
-    <h3>{{project.title}}</h3>
+    <h3>{{project['title']}}</h3>
     <div class="table-container">
         <table class="cabin-table">
             <tr>
                 <th width="350px">Description</th>
-                <th width="200px">Team leader</th>
-                <th width="150px">Number of collaborators needed</th>
+                <th width="150px">Team leader</th>
+                <th width="200px">Collaborators</th>
+                <th width="200px">Tagss</th>
             </tr>
             <tr>
-                <td>{{job.description}}</td>
-                <td>{{names[project.team_leader]}}</td>
-                <td>{{project.collaborators}}</td>
+                <td>{{project['description']}}</td>
+                <td>{{project['team_leader']}}</td>
+                <td>{{project['collaborators']}}</td>
+                <td>{{project['tags']}}</td>
             </tr>
         </table>
 </div>

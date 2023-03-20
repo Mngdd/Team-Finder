@@ -22,15 +22,7 @@
             </p>
         {% endfor %}
     </p>
-    <p>
-        {{ form.collaborators.label }}<br>
-        {{ form.collaborators(class="form-control") }}<br>
-        {% for error in form.collaborators.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
+    <p>{{ form.tags() }} {{ form.tags.label }}</p>
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
 </form>

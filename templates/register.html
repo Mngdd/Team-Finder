@@ -40,15 +40,6 @@
             </p>
         {% endfor %}
     </p>
-    <p>
-        {{ form.github_profile.label }}<br>
-        {{ form.github_profile(class="form-control") }}<br>
-        {% for error in form.github_profile.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{ error }}
-            </p>
-        {% endfor %}
-    </p>
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
 </form>
