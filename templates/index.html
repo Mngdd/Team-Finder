@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Works log</h2>
 {% if current_user.is_authenticated %}
     <a href="jobs" class="btn btn-secondary">Add job</a>
 {% endif %}
@@ -33,5 +32,5 @@
 <div class="input-group">
       <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
       <button type="button" class="btn btn-outline-primary">search</button>
-    </div>
+</div>
 {% endblock %}

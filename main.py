@@ -23,7 +23,7 @@ def bad_request(_):
 
 
 def main():
-    db_session.global_init("db/mars.db")
+    db_session.global_init("db/mars.db")  # TODO: ПОМЕНЯТЬ НА data.db И ВСЕ ЧТО С ЭТИМ СВЯЗАНО
     app.register_blueprint(jobs_api.blueprint)
     app.run()
 
@@ -84,6 +84,15 @@ def login():
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
+
+
+@app.route('/search')
+def search():  # TODO: ДОБАВИТЬ ВЗАИМОДЕЙСТВИЕ С БД
+    results = {'название': ['описание краткое', ['тэг1', 'тэг2', 'тэг3']],
+               'бббб': ['описание 2', ['тэг1']],
+               'вввв': ['описание 3', ['тэг1', 'антон']]}
+    # это просто пример, поменять на загрузку из бд
+    return render_template('search.html', title='поиск', results=results)
 
 
 @app.route('/logout')

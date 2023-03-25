@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block search %}
+<p>Найдено результатов: {{results|length}}</p>
+{% for res in results%}
+    <div class="card" style="width: 48rem; margin-top:15px">
+      <div class="card-body">
+        <h5 class="card-title">{{res}}</h5>
+          {% for tag in results[res][1]%}
+            <a href="#"><span class="badge badge-pill badge-light">{{tag}}</span></a>
+          {% endfor %}
+          <!--<h6 class="card-subtitle mb-2 text-muted">тут типа чета написать</h6>-->
+        <p class="card-text" style="margin-top:7px">{{results[res][0]}}</p>
+        <a href="#" class="card-link">Открыть</a>
+        <a href="#" class="card-link">Написать</a>
+      </div>
+    </div>
+{% endfor %}
+<!--добавить взаимодействие с тегами (чтоб при нажатии убирало/добавляло тег или еще чета)-->
+<!-- кнопки рабочими сделать и поменять их дизайн(ну чтоб красиво было) -->
+{% endblock %}
