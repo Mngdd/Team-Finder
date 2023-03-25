@@ -22,6 +22,5 @@ class LoginForm(FlaskForm):
 class ProjectForm(FlaskForm):
     title = StringField('Project title', validators=[DataRequired()])
     description = TextAreaField('Project description', validators=[DataRequired()])
-    # tags = SelectMultipleField('Tags', choices=[tag['tag'] for tag in
-    #                                             get('http://127.0.0.1:5000/api/tags').json()['tags']])
+    tags = SelectMultipleField('Tags', choices=[])
     submit = SubmitField('Add project')

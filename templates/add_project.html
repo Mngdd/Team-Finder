@@ -22,7 +22,16 @@
             </p>
         {% endfor %}
     </p>
-    <p>{{ form.tags() }} {{ form.tags.label }}</p>
+    <p>
+        {{ form.tags.label }}<br>
+        {{ form.tags(class="form-control") }}<br>
+        {% for error in form.tags.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+<!--    <p>{{ form.tags() }} {{ form.tags.label }}</p>-->
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
 </form>

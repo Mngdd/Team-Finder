@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect
 from flask_login import LoginManager, login_required, logout_user, current_user, login_user
 from flask_restful import Api
 from requests import get, post, delete
+from wtforms import SelectMultipleField
 
 from data import db_session, users_resourse, projects_resourse, tags_resourse
 from data.users import User
@@ -77,21 +78,24 @@ def login():  # flask_login wouldn't let make it the RESTful way
     return render_template('login.html', title='Авторизация', form=form)
 
 
-# @app.route('/add_project', methods=['GET', 'POST'])
-# def add_project():
-#     form = ProjectForm()
-#     if form.validate_on_submit():
-#         db_sess = db_session.create_session()
-#         project = Project()
-#         project.team_leader = current_user.id
-#         project.title = form.title.data
-#         project.description = form.description.data
-#         project.collaborators = form.collaborators.data
-#         project.tags = ','.join(form.tags.data)
-#         db_sess.add(project)
-#         db_sess.commit()
-#         return redirect('/')
-#     return render_template('add_project.html', title='Add project', form=form)
+@app.route('/add_project', methods=['GET', 'POST'])
+@login_required
+def add_project():
+    form = ProjectForm()
+    form.tags.choices = [(tag['id'], tag['tag']) for tag in
+                         get('http://127.0.0.1:5000/api/tags').json()['tags']]
+    if form.validate_on_submit():
+        print(form.tags.data)
+        # if post('http://127.0.0.1:5000/api/projects',
+        #         json={'team_leader': current_user.id,
+        #               'title': form.title.data,
+        #               'description': form.description.data,
+        #               'tags': form.tags.data}).json().get('message', False):
+        #     return render_template('register.html', title='Add project',
+        #                            form=form,
+        #                            message="Error")
+        return redirect('/')
+    return render_template('add_project.html', title='Add project', form=form)
 
 
 @app.route('/logout')
