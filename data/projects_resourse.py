@@ -1,5 +1,4 @@
 from flask import jsonify
-from flask_login import login_required
 from flask_restful import abort, Resource
 
 from . import db_session
@@ -21,12 +20,11 @@ class ProjectsResource(Resource):
         abort_if_project_not_found(project_id)
         session = db_session.create_session()
         project = session.query(Project).get(project_id)
-        project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'archived'))
+        project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'image', 'archived'))
         project_json['collaborators'] = project.get_collaborators()
         project_json['tags'] = project.get_tags()
         return jsonify({'project': project_json})
 
-    @login_required
     def delete(self, project_id):
         abort_if_project_not_found(project_id)
         session = db_session.create_session()
@@ -35,7 +33,6 @@ class ProjectsResource(Resource):
         session.commit()
         return jsonify({'success': 'OK'})
 
-    @login_required
     def post(self, project_id):
         """Edit a project
         Collaborators are edited in or out one by one, tags are updated as a whole."""
@@ -65,13 +62,12 @@ class ProjectsListResource(Resource):
         projects = session.query(Project).all()
         projects_list = []
         for project in projects:
-            project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'archived'))
+            project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'image', 'archived'))
             project_json['collaborators'] = project.get_collaborators()
             project_json['tags'] = project.get_tags()
             projects_list.append(project_json)
         return jsonify({'projects': projects_list})
 
-    @login_required
     def post(self):
         args = add_project_parser.parse_args()
         session = db_session.create_session()

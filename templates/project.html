@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{project['title']}}</h2>
+{% if current_user.is_authenticated %}
+    {% if current_user.id == project['team_leader'] %}
+        <a href="/edit_project/{{project['id']}}" class="btn btn-secondary">Edit</a>
+        {% if project['archived'] %}
+            <a href="/archive_project/{{project['id']}}" class="btn btn-secondary">Un-archive</a>
+        {% else %}
+            <a href="/archive_project/{{project['id']}}" class="btn btn-secondary">Archive</a>
+        {% endif %}
+        <a href="/delete_project/{{project['id']}}" class="btn btn-danger">Delete</a>
+    {% elif current_user.id in project['collaborators'] %}
+        <a href="/leave_project/{{project['id']}}" class="btn btn-secondary">Leave project</a>
+    {% else %}
+        <a href="/collaborate/{{project['id']}}" class="btn btn-secondary">Collaborate</a>
+    {% endif %}
+{% endif %}
+<div class="project-data">
+    <div class="data-left">
+        <div>{{project['description']}}</div>
+        {% if project['image'] is not none %}
+            <img src=".{{ project['image'] }}">
+        {% endif %}
+    </div>
+    <div class="data-right">
+        <p class="tags">{{', '.join(project['tags_str'])}}</p>
+        <ul class="list-group">
+            <li class="list-group-item active" aria-current="true">{{ project['team_leader_name'] }}</li>
+            {% for name in project['collaborators_names']%}
+            <li class="list-group-item">{{ name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

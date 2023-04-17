@@ -20,6 +20,7 @@ class Project(SqlAlchemyBase, SerializerMixin):
     team_leader = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    image = sqlalchemy.Column(sqlalchemy.String)
     archived = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
 
     users = orm.relationship("User")

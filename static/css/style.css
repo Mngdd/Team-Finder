@@ -1,20 +1,166 @@
-h4 {
-    color: #cccccc;
-    padding: 20px;
-}
+/* Navigation bar */
 
-span.navbar-brand {
+a.navbar-brand {
     font-size: 36px;
 }
+
+.dropdown {
+    padding: 6px;
+    margin-right: 20px;
+}
+
+/* Headings */
 
 h2 {
     text-align: center;
 }
 
-td {
-    background-color: #E6E6FA;
+/* Contents */
+
+.container {
+    padding: 50px;
 }
 
-th {
-    background-color: #D3D3D3;
+/* Project card */
+
+.card {
+    border-radius: 10px;
+}
+
+.card:not(:first-child):not(:last-child) {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.card .title {
+    text-align: center;
+}
+
+.card .title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.card .team_leader {
+    margin-right: 20px;
+    text-align: right;
+    color: grey;
+}
+
+.card .tags {
+    width: fit-content;
+    border-radius: 10px;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-left: 10px;
+    text-align: center;
+    color: white;
+    background-color: steelblue;
+}
+
+.card .description {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* Search bar */
+
+form.search-form {
+    margin-top: 30px;
+}
+
+.search-bar {
+    display: inline-block;
+    width: 40%;
+    margin-right: 10px;
+}
+
+.show_all {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* Dropdown checklist */
+
+.dropdown-check-list {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.dropdown-check-list .anchor {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 50px 5px 10px;
+    border: 1px solid #ccc;
+}
+
+.dropdown-check-list .anchor:after {
+    position: absolute;
+    content: "";
+    border-left: 2px solid black;
+    border-top: 2px solid black;
+    padding: 5px;
+    right: 10px;
+    top: 20%;
+    -moz-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+}
+
+.dropdown-check-list .anchor:active:after {
+    right: 8px;
+    top: 21%;
+}
+
+.dropdown-check-list ul.items {
+    padding: 2px;
+    display: none;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.dropdown-check-list ul.items li {
+    list-style: none;
+}
+
+.dropdown-check-list.visible .anchor {
+    color: #0094ff;
+}
+
+.dropdown-check-list.visible .items {
+    display: block;
+}
+
+/* Project page */
+
+.project-data {
+    display: inline-block;
+}
+
+.project-data .data-left {
+    position: relative;
+    width: 60%;
+}
+
+.project-data .data-left img {
+    width: 500px;
+    object-fit: contain;
+}
+
+.project-data .data-right {
+    position: relative;
+}
+
+.project-data .tags {
+    width: fit-content;
+    border-radius: 10px;
+    padding-right: 5px;
+    padding-left: 5px;
+    text-align: center;
+    color: white;
+    background-color: steelblue;
 }

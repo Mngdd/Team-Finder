@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import EmailField, PasswordField, BooleanField, SubmitField, StringField, TextAreaField, \
-    SelectMultipleField
+    SelectMultipleField, FileField, widgets
 from wtforms.validators import DataRequired
 
 
@@ -22,5 +22,25 @@ class LoginForm(FlaskForm):
 class ProjectForm(FlaskForm):
     title = StringField('Project title', validators=[DataRequired()])
     description = TextAreaField('Project description', validators=[DataRequired()])
-    tags = SelectMultipleField('Tags', choices=[])
-    submit = SubmitField('Add project')
+    image = FileField('Image')
+    tags = SelectMultipleField('Tags', coerce=int)
+    additional_tags = StringField('Additional tags')
+    submit = SubmitField('Submit')
+
+
+class MultiCheckboxField(SelectMultipleField):
+    """
+    A multiple-select, except displays a list of checkboxes.
+
+    Iterating the field will produce subfields, allowing custom rendering of
+    the enclosed checkbox fields.
+    """
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
+
+class FilterForm(FlaskForm):
+    tags = MultiCheckboxField('Tags', coerce=int)
+    search = StringField('Search')
+    show_all = BooleanField('Show all')
+    submit = SubmitField('Search')

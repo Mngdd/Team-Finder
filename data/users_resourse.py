@@ -1,6 +1,5 @@
 import datetime
 from flask import jsonify
-from flask_login import login_required
 from flask_restful import abort, Resource
 
 from . import db_session
@@ -23,7 +22,6 @@ class UsersResource(Resource):
         user = session.query(User).get(user_id)
         return jsonify({'user': user.to_dict(only=('id', 'nickname', 'email'))})
 
-    @login_required
     def delete(self, user_id):
         abort_if_user_not_found(user_id)
         session = db_session.create_session()
@@ -32,7 +30,6 @@ class UsersResource(Resource):
         session.commit()
         return jsonify({'success': 'OK'})
 
-    @login_required
     def post(self, user_id):  # edit user
         abort_if_user_not_found(user_id)
         args = edit_user_parser.parse_args()

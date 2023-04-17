@@ -1,6 +1,9 @@
-flask
+flask~=2.2.2
 flask_login
-wtforms
+wtforms~=3.0.1
 flask_wtf
 sqlalchemy_serializer
-sqlalchemy
+sqlalchemy~=2.0.4
+
+Werkzeug~=2.2.2
+requests~=2.28.2
