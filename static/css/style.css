@@ -143,6 +143,7 @@ form.search-form {
 
 .project-data {
     margin-top: 30px;
+    overflow: auto;
 }
 
 .project-data .data-left {
@@ -173,8 +174,22 @@ form.search-form {
 
 /* Footer */
 
-/*div.logo {
-    background: url('/static/images/logo.jpg') no-repeat;
-    height: 90px;
-    width: 324px;
-}*/
+footer {
+    display: block;
+}
+
+.py-4 {
+    padding-top: 1.5rem!important;
+    padding-bottom: 1.5rem!important;
+}
+
+.mt-5 {
+    margin-top: 3rem!important;
+}
+
+div.logo {
+    background: url(/static/img/logo.jpg) no-repeat;
+    padding-bottom: 90px;
+    padding-right: 324px;
+    margin-left: 100px;
+}

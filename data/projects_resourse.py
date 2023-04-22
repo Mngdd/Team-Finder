@@ -31,10 +31,11 @@ class ProjectsResource(Resource):
         abort_if_project_not_found(project_id)
         session = db_session.create_session()
         project = session.query(Project).get(project_id)
+        image = project.image
         session.delete(project)
         session.commit()
         session.close()
-        return jsonify({'success': 'OK'})
+        return jsonify({'success': 'OK', 'image': image})
 
     def post(self, project_id):
         """Edit a project
