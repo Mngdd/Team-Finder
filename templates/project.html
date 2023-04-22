@@ -3,6 +3,7 @@
 {% block content %}
 <h2>{{project['title']}}</h2>
 {% if current_user.is_authenticated %}
+<div class="project-buttons">
     {% if current_user.id == project['team_leader'] %}
         <a href="/edit_project/{{project['id']}}" class="btn btn-secondary">Edit</a>
         {% if project['archived'] %}
@@ -17,6 +18,7 @@
         <a href="/collaborate/{{project['id']}}" class="btn btn-secondary">Collaborate</a>
     {% endif %}
 {% endif %}
+</div>
 <div class="project-data">
     <div class="data-left">
         <div>{{project['description']}}</div>

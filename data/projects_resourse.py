@@ -11,6 +11,7 @@ from .reqparse import add_project_parser, edit_project_parser
 def abort_if_project_not_found(project_id):
     session = db_session.create_session()
     project = session.query(Project).get(project_id)
+    session.close()
     if not project:
         abort(404, message=f"Project {project_id} not found")
 
@@ -23,6 +24,7 @@ class ProjectsResource(Resource):
         project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'image', 'archived'))
         project_json['collaborators'] = project.get_collaborators()
         project_json['tags'] = project.get_tags()
+        session.close()
         return jsonify({'project': project_json})
 
     def delete(self, project_id):
@@ -31,6 +33,7 @@ class ProjectsResource(Resource):
         project = session.query(Project).get(project_id)
         session.delete(project)
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
     def post(self, project_id):
@@ -53,6 +56,7 @@ class ProjectsResource(Resource):
                                                                             if v is not None
                                                                             and k not in ('collaborators', 'tags')})
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
 
@@ -66,6 +70,7 @@ class ProjectsListResource(Resource):
             project_json['collaborators'] = project.get_collaborators()
             project_json['tags'] = project.get_tags()
             projects_list.append(project_json)
+        session.close()
         return jsonify({'projects': projects_list})
 
     def post(self):
@@ -79,4 +84,5 @@ class ProjectsListResource(Resource):
             project.tags = [session.query(Tags).get(tag_id) for tag_id in map(int, args['tags'].split())]
         session.add(project)
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
