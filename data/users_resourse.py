@@ -11,6 +11,7 @@ from .reqparse import add_user_parser, edit_user_parser
 def abort_if_user_not_found(user_id):
     session = db_session.create_session()
     user = session.query(User).get(user_id)
+    session.close()
     if not user:
         abort(404, message=f'User {user_id} not found')
 
@@ -20,6 +21,7 @@ class UsersResource(Resource):
         abort_if_user_not_found(user_id)
         session = db_session.create_session()
         user = session.query(User).get(user_id)
+        session.close()
         return jsonify({'user': user.to_dict(only=('id', 'nickname', 'email'))})
 
     def delete(self, user_id):
@@ -28,6 +30,7 @@ class UsersResource(Resource):
         user = session.query(User).get(user_id)
         session.delete(user)
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
     def post(self, user_id):  # edit user
@@ -51,6 +54,7 @@ class UsersResource(Resource):
                                                                    ('password', 'projects') and v is not None})
         user.modified_date = datetime.datetime.now()
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
 
@@ -58,6 +62,7 @@ class UsersListResource(Resource):
     def get(self):
         session = db_session.create_session()
         users = session.query(User).all()
+        session.close()
         return jsonify({'users': [user.to_dict(only=('id', 'nickname', 'email')) for user in users]})
 
     def post(self):  # add user
@@ -72,4 +77,5 @@ class UsersListResource(Resource):
                 user.projects.append(session.query(Project).get(project_id))
         session.add(user)
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})

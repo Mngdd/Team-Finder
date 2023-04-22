@@ -9,6 +9,7 @@ from .reqparse import add_tag_parser, edit_tag_parser
 def abort_if_tag_not_found(tag_id):
     session = db_session.create_session()
     tag = session.query(Tags).get(tag_id)
+    session.close()
     if not tag:
         abort(404, message=f"Project {tag_id} not found")
 
@@ -18,6 +19,7 @@ class TagsResource(Resource):
         abort_if_tag_not_found(tag_id)
         session = db_session.create_session()
         tag = session.query(Tags).get(tag_id)
+        session.close()
         return jsonify({'tag': tag.to_dict(only=('id', 'tag'))})
 
     def delete(self, tag_id):
@@ -26,6 +28,7 @@ class TagsResource(Resource):
         tag = session.query(Tags).get(tag_id)
         session.delete(tag)
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
     def post(self, tag_id):
@@ -34,6 +37,7 @@ class TagsResource(Resource):
         session = db_session.create_session()
         session.query(Tags).filter(Tags.id == tag_id).update({k: v for k, v in args.items() if v is not None})
         session.commit()
+        session.close()
         return jsonify({'success': 'OK'})
 
 
@@ -41,6 +45,7 @@ class TagsListResource(Resource):
     def get(self):
         session = db_session.create_session()
         tags = session.query(Tags).all()
+        session.close()
         return jsonify({'tags': [tag.to_dict(only=('id', 'tag')) for tag in tags]})
 
     def post(self):
@@ -49,4 +54,6 @@ class TagsListResource(Resource):
         tag = Tags(**{k: v for k, v in args.items() if v is not None})
         session.add(tag)
         session.commit()
-        return jsonify({'success': 'OK', 'id': tag.id})  # returns id for further use
+        tag_id = tag.id
+        session.close()
+        return jsonify({'success': 'OK', 'id': tag_id})  # returns id for further use

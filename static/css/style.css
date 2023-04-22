@@ -27,7 +27,7 @@ h2 {
     border-radius: 10px;
 }
 
-.card:not(:first-child):not(:last-child) {
+.card {  /* :not(:first-child):not(:last-child) */
   margin-top: 20px;
   margin-bottom: 20px;
 }
@@ -137,22 +137,27 @@ form.search-form {
 
 /* Project page */
 
+.project-buttons {
+    margin-top: 30px;
+}
+
 .project-data {
-    display: inline-block;
+    margin-top: 30px;
 }
 
 .project-data .data-left {
-    position: relative;
     width: 60%;
+    float: left;
 }
 
 .project-data .data-left img {
-    width: 500px;
+    padding: 20px;
+    width: 100%;
     object-fit: contain;
 }
 
 .project-data .data-right {
-    position: relative;
+    margin-left: 65%;
 }
 
 .project-data .tags {
@@ -164,3 +169,12 @@ form.search-form {
     color: white;
     background-color: steelblue;
 }
+
+
+/* Footer */
+
+/*div.logo {
+    background: url('/static/images/logo.jpg') no-repeat;
+    height: 90px;
+    width: 324px;
+}*/

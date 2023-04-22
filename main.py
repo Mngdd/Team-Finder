@@ -1,7 +1,10 @@
-from flask import Flask, render_template, redirect, request
+import os
+
+from flask import Flask, render_template, redirect, request, url_for
 from flask_login import LoginManager, login_required, logout_user, current_user, login_user
 from flask_restful import Api
 from requests import get, post, delete
+from urllib.parse import urlparse
 
 from data import db_session, users_resourse, projects_resourse, tags_resourse
 from data.users import User
@@ -22,6 +25,8 @@ def main():
     api.add_resource(projects_resourse.ProjectsResource, '/api/projects/<int:project_id>')
     api.add_resource(tags_resourse.TagsListResource, '/api/tags')
     api.add_resource(tags_resourse.TagsResource, '/api/tags/<int:tag_id>')
+    # port = int(os.environ.get("PORT", 5000))
+    # app.run(host='0.0.0.0', port=port)
     app.run()
 
 
@@ -31,8 +36,9 @@ def handle_error(res, template, title, **kwargs):  # Handle response errors
 
 
 def transform_project_data(project):  # Transforms project data into useful info
-    names = {user['id']: user['nickname'] for user in get('http://127.0.0.1:5000/api/users').json()['users']}
-    tags = {tag['id']: tag['tag'] for tag in get('http://127.0.0.1:5000/api/tags').json()['tags']}
+    names = {user['id']: user['nickname'] for user in
+             get(f'http://{urlparse(request.base_url).netloc}/api/users').json()['users']}
+    tags = {tag['id']: tag['tag'] for tag in get(f'http://{urlparse(request.base_url).netloc}/api/tags').json()['tags']}
     project['team_leader'] = int(project['team_leader'])
     project['team_leader_name'] = names[project['team_leader']]
     project['collaborators'] = list(map(int, project['collaborators'].split()))
@@ -43,10 +49,10 @@ def transform_project_data(project):  # Transforms project data into useful info
 
 def get_project(project_id=None):  # Returns usable info about project(s)
     if project_id is not None:
-        project = get(f'http://127.0.0.1:5000/api/projects/{project_id}').json()['project']
+        project = get(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}').json()['project']
         transform_project_data(project)
         return project
-    projects = get('http://127.0.0.1:5000/api/projects').json()['projects']
+    projects = get(f'http://{urlparse(request.base_url).netloc}/api/projects').json()['projects']
     for project in projects:
         transform_project_data(project)
     return projects
@@ -62,7 +68,7 @@ def load_user(user_id):
 def index():  # Main page displays available projects
     form = FilterForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get('http://127.0.0.1:5000/api/tags').json()['tags']]
+                         get(f'http://{urlparse(request.base_url).netloc}/api/tags').json()['tags']]
     projects = [project for project in get_project() if not project['archived']]
     if form.validate_on_submit():
         if not form.show_all.data:
@@ -84,6 +90,7 @@ def index():  # Main page displays available projects
 @app.route('/projects/<nickname>/<status>')
 @login_required
 def user_projects(nickname, status):  # Displays created, collaborative and archived projects
+    print(urlparse(request.base_url))
     if nickname != current_user.nickname or status not in ('created', 'collaborative', 'archived'):
         return redirect('/')
     if status == 'created':
@@ -106,7 +113,7 @@ def register():
             return render_template('register.html', title='Register',
                                    form=form,
                                    message="Passwords don't match")
-        res = post('http://127.0.0.1:5000/api/users',
+        res = post(f'http://{urlparse(request.base_url).netloc}/api/users',
                    json={'email': form.email.data,
                          'password': form.password.data,
                          'nickname': form.nickname.data}).json()
@@ -133,12 +140,13 @@ def login():  # flask_login wouldn't let make it the RESTful way
 def add_project():
     form = ProjectForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get('http://127.0.0.1:5000/api/tags').json()['tags']]
+                         get(f'http://{urlparse(request.base_url).netloc}/api/tags').json()['tags']]
     if form.validate_on_submit():
         additional_tags = []
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
-                res = post('http://127.0.0.1:5000/api/tags', json={'tag': tag}).json()
+                res = post(f'http://{urlparse(request.base_url).netloc}/api/tags', json={'tag': tag}).json()
+                print(res)
                 handle_error(res, 'add_project.html', 'Add project', form=form)
                 additional_tags.append(res['id'])
         res_json = {'team_leader': current_user.id,
@@ -150,7 +158,7 @@ def add_project():
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
-        res = post('http://127.0.0.1:5000/api/projects', json=res_json).json()
+        res = post(f'http://{urlparse(request.base_url).netloc}/api/projects', json=res_json).json()
         handle_error(res, 'add_project.html', 'Add project', form=form)
         return redirect('/')
     return render_template('add_project.html', title='Add project', form=form)
@@ -166,17 +174,17 @@ def project_page(project_id):  # Detailed info + actions
 def edit_project(project_id):
     form = ProjectForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get('http://127.0.0.1:5000/api/tags').json()['tags']]
+                         get(f'http://{urlparse(request.base_url).netloc}/api/tags').json()['tags']]
     if request.method == "GET":  # restore project data
-        project = get(f'http://127.0.0.1:5000/api/projects/{project_id}').json()['project']
+        project = get_project(project_id)
         form.title.data = project['title']
         form.description.data = project['description']
-        form.tags.data = list(map(int, project['tags'].split()))
+        form.tags.data = project['tags']
     if form.validate_on_submit():
         additional_tags = []
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
-                res = post('http://127.0.0.1:5000/api/tags', json={'tag': tag}).json()
+                res = post(f'http://{urlparse(request.base_url).netloc}/api/tags', json={'tag': tag}).json()
                 handle_error(res, 'add_project.html', 'Edit project', form=form)
                 additional_tags.append(res['id'])
         res_json = {'title': form.title.data,
@@ -187,7 +195,7 @@ def edit_project(project_id):
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
-        res = post(f'http://127.0.0.1:5000/api/projects/{project_id}', json=res_json).json()
+        res = post(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}', json=res_json).json()
         handle_error(res, 'add_project.html', 'Edit project', form=form)
         return redirect(f'/project/{project_id}')
     return render_template('add_project.html', title='Edit project', form=form)
@@ -196,14 +204,14 @@ def edit_project(project_id):
 @app.route('/delete_project/<project_id>')
 @login_required
 def delete_project(project_id):
-    delete(f'http://127.0.0.1:5000/api/projects/{project_id}').json()
-    return redirect('/')
+    delete(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}').json()
+    return redirect(url_for('index'))
 
 
 @app.route('/leave_project/<project_id>')
 @login_required
 def leave_project(project_id):
-    post(f'http://127.0.0.1:5000/api/projects/{project_id}',
+    post(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}',
          json={'collaborators': str(-current_user.id)})
     return redirect(f'/project/{project_id}')
 
@@ -211,7 +219,7 @@ def leave_project(project_id):
 @app.route('/collaborate/<project_id>')
 @login_required
 def collaborate(project_id):
-    post(f'http://127.0.0.1:5000/api/projects/{project_id}',
+    post(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}',
          json={'collaborators': str(current_user.id)})
     return redirect(f'/project/{project_id}')
 
@@ -220,7 +228,7 @@ def collaborate(project_id):
 @login_required
 def archive(project_id):
     archived = get_project(project_id)['archived']
-    post(f'http://127.0.0.1:5000/api/projects/{project_id}',
+    post(f'http://{urlparse(request.base_url).netloc}/api/projects/{project_id}',
          json={'archived': not archived})
     return redirect(f'/project/{project_id}')
 
@@ -229,7 +237,7 @@ def archive(project_id):
 @login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
