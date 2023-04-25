@@ -23,6 +23,15 @@
         {% endfor %}
     </p>
     <p>
+        {{ form.location.label }}<br>
+        {{ form.location(class="form-control") }}<br>
+        {% for error in form.location.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </p>
+    <p>
         {{ form.image.label }}<br>
         {{ form.image(class="form-control", type="file") }}<br>
         {% for error in form.image.errors %}
@@ -31,6 +40,9 @@
             </p>
         {% endfor %}
     </p>
+    {% if remove_image %}
+        <p>{{ form.remove_image() }} {{ form.remove_image.label }}</p>
+    {% endif %}
     <p>
         {{ form.tags.label }}<br>
         {{ form.tags(class="form-control") }}<br>

@@ -16,7 +16,7 @@ class Tags(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'tags'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    tag = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    tag = sqlalchemy.Column(sqlalchemy.Integer, nullable=True, unique=True)
 
     def __repr__(self):
         return f'<Tag> {self.id}'

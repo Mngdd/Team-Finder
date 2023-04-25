@@ -22,6 +22,9 @@ class Project(SqlAlchemyBase, SerializerMixin):
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     image = sqlalchemy.Column(sqlalchemy.String)
     archived = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
+    location = sqlalchemy.Column(sqlalchemy.String)
+    ll = sqlalchemy.Column(sqlalchemy.String)  # ll and spn for location
+    spn = sqlalchemy.Column(sqlalchemy.String)
 
     users = orm.relationship("User")
     collaborators = orm.relationship("User", secondary="projects_to_users", backref="projects")

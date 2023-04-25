@@ -6,6 +6,7 @@ from .project import Project
 from .tags import Tags
 from .users import User
 from .reqparse import add_project_parser, edit_project_parser
+from maps_api.geocoder import geocode, get_ll_span
 
 
 def abort_if_project_not_found(project_id):
@@ -21,7 +22,8 @@ class ProjectsResource(Resource):
         abort_if_project_not_found(project_id)
         session = db_session.create_session()
         project = session.query(Project).get(project_id)
-        project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'image', 'archived'))
+        project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description',
+                                             'image', 'archived', 'location', 'll', 'spn'))
         project_json['collaborators'] = project.get_collaborators()
         project_json['tags'] = project.get_tags()
         session.close()
@@ -52,10 +54,21 @@ class ProjectsResource(Resource):
                     project.collaborators.remove(session.query(User).get(-user_id))
         if args['tags']:
             project.tags = [session.query(Tags).get(tag_id) for tag_id in map(int, args['tags'].split())]
+        try:
+            ll, spn = get_ll_span(args['location'])
+            location = geocode(args['location'])['metaDataProperty']['GeocoderMetaData']['text']
+            if args['location']:
+                project.ll = ll
+                project.spn = spn
+                project.location = location
+            else:
+                project.ll, project.spn, project.location = None, None, None
+        except RuntimeError:
+            project.ll, project.spn, project.location = None, None, None
         if any(v is not None for k, v in args.items() if k not in ('collaborators', 'tags')):
             session.query(Project).filter(Project.id == project_id).update({k: v for k, v in args.items()
-                                                                            if v is not None
-                                                                            and k not in ('collaborators', 'tags')})
+                                                                            if v is not None and k not in
+                                                                            ('collaborators', 'tags', 'location')})
         session.commit()
         session.close()
         return jsonify({'success': 'OK'})
@@ -67,7 +80,8 @@ class ProjectsListResource(Resource):
         projects = session.query(Project).all()
         projects_list = []
         for project in projects:
-            project_json = project.to_dict(only=('id', 'team_leader', 'title', 'description', 'image', 'archived'))
+            project_json = project.to_dict(only=('id', 'team_leader', 'title',
+                                                 'description', 'image', 'archived', 'location', 'll', 'spn'))
             project_json['collaborators'] = project.get_collaborators()
             project_json['tags'] = project.get_tags()
             projects_list.append(project_json)
@@ -77,12 +91,15 @@ class ProjectsListResource(Resource):
     def post(self):
         args = add_project_parser.parse_args()
         session = db_session.create_session()
-        project = Project(**{k: v for k, v in args.items() if v is not None and k not in ('collaborators', 'tags')})
+        project = Project(**{k: v for k, v in args.items() if v is not None
+                             and k not in ('collaborators', 'tags', 'location')})
         if args['collaborators']:
             for user_id in map(int, args['collaborators'].split()):
                 project.collaborators.append(session.query(User).get(user_id))
         if args['tags']:
             project.tags = [session.query(Tags).get(tag_id) for tag_id in map(int, args['tags'].split())]
+        if args['location']:
+            project.ll, project.spn = get_ll_span(args['location'])
         session.add(project)
         session.commit()
         session.close()

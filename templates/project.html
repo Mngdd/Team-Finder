@@ -22,18 +22,25 @@
 <div class="project-data">
     <div class="data-left">
         <div>{{project['description']}}</div>
-        {% if project['image'] is not none %}
-            <img src=".{{ project['image'] }}">
+        {% if project['image'] %}
+            <img src=".{{ project['image'] }}" alt="{{ project['title'] }} image">
         {% endif %}
     </div>
     <div class="data-right">
-        <p class="tags">{{', '.join(project['tags_str'])}}</p>
+        {% for tag in project['tags_str']%}
+                <span class="badge badge-pill badge-secondary">{{tag}}</span>
+        {% endfor %}
         <ul class="list-group">
             <li class="list-group-item active" aria-current="true">{{ project['team_leader_name'] }}</li>
             {% for name in project['collaborators_names']%}
             <li class="list-group-item">{{ name }}</li>
             {% endfor %}
         </ul>
+        {% if loc_image %}
+        <img src=".{{loc_image}}" alt="location image">
+        <p>{{ project['location'] }}</p>
+        <p>See location in <a href="https://yandex.ru/maps/?mode=search&text={{project['location']}}">Yandex maps</a></p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

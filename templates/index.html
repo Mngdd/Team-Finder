@@ -4,33 +4,50 @@
 <h2>Available projects</h2>
 <form action="{{ url_for('index') }}" method="POST" class="search-form">
     {{ form.hidden_tag() }}
-    <div id="list1" class="dropdown-check-list" tabindex="100">
-        <span class="anchor">Select Tags</span>
-        {{ form.tags(class="items") }}
-    </div>
-    <div class="search-bar">
-        {{ form.search(class="form-control", placeholder="Search...") }}
-    </div>
-    <div class="show-all">
+    <div>
         {{ form.show_all() }} {{ form.show_all.label }}
     </div>
-    {{ form.submit(type="submit", class="btn btn-primary") }}
+    <div class="input-group mb-3">
+        <div id="list1" class="dropdown-check-list" tabindex="100">
+            <span class="anchor">Select Tags</span>
+            {{ form.tags(class="items") }}
+        </div>
+        <div class="search-bar">
+            {{ form.search(class="form-control", placeholder="Search...") }}
+        </div>
+        {{ form.submit(type="submit", class="btn btn-primary my-2 my-sm-0 search-button") }}
+    </div>
 </form>
+
+<p class="text-muted">Results found: {{projects|length}}</p>
 {% for project in projects%}
     <div class="card">
-        <p class="team_leader">by {{project['team_leader_name']}}</p>
-        <h3 class="title"><a href="/project/{{project['id']}}">{{project['title']}}</a></h3>
-        <p class="tags">{{', '.join(project['tags_str'])}}</p>
-        <p class="description">{{project['description']}}</p>
+        <div class="card-body">
+            <h5 class="card-title">
+                <a href="/project/{{project['id']}}" class="text-dark">{{project['title']}}</a>
+            </h5>
+            <p class="text-secondary float-right team-leader">by {{project['team_leader_name']}}</p>
+            <div class="card-tags">
+                {% for tag in project['tags_str']%}
+                    <span class="badge badge-pill badge-secondary">{{tag}}</span>
+                {% endfor %}
+            </div>
+            {% if project['description']|length > 137 %}
+                <p class="card-text">{{project['description'][:134]}}...</p>
+            {% else %}
+                <p class="card-text">{{project['description']}}</p>
+            {% endif %}
+            <a href="/project/{{project['id']}}" class="card-link">Read more</a>
+        </div>
     </div>
 {% endfor %}
 <script>
-        var checkList = document.getElementById('list1');
-        checkList.getElementsByClassName('anchor')[0].onclick = function (evt) {
-            if (checkList.classList.contains('visible'))
-                checkList.classList.remove('visible');
-            else
-                checkList.classList.add('visible');
-        }
-    </script>
+    var checkList = document.getElementById('list1');
+    checkList.getElementsByClassName('anchor')[0].onclick = function (evt) {
+        if (checkList.classList.contains('visible'))
+            checkList.classList.remove('visible');
+        else
+            checkList.classList.add('visible');
+    }
+</script>
 {% endblock %}

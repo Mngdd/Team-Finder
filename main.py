@@ -28,11 +28,6 @@ def main():
     app.run(host='0.0.0.0', port=port)
 
 
-def handle_error(res, template, title, **kwargs):  # Handle response errors
-    if res.get('message', False):
-        return render_template(template, title=title, **kwargs)
-
-
 def transform_project_data(project):  # Transforms project data into useful info
     names = {user['id']: user['nickname'] for user in
              get(f'http://{request.host}/api/users').json()['users']}
@@ -57,12 +52,26 @@ def get_project(project_id=None):  # Returns usable info about project(s)
 
 
 def get_filename(filename):  # get filename for projects with duplicate names
+    images = tuple(project['image'] for project in get_project() if project['image'] is not None)
     n = 0
-    not_exist = os.access(f'{filename}_{n}.jpg', os.F_OK)
-    while not_exist:
+    while f'./static/img/{filename}_{n}.jpg' in images:
         n += 1
-        not_exist = os.access(f'{filename}_{n}.jpg', os.F_OK)
-    return f'{filename}_{n}.jpg'
+    return f'./static/img/{filename}_{n}.jpg'
+
+
+def get_location_image(ll, spn, filename):  # write location image
+    params = {
+        'll': ll,
+        'spn': spn,
+        'pt': f'{ll},pm2bll',  # set marker on exact location
+        'l': 'map'
+    }
+    map_request = 'http://static-maps.yandex.ru/1.x/'
+    response = get(map_request, params=params)
+
+    if response:
+        with open(filename, 'wb') as f:
+            f.write(response.content)
 
 
 @login_manager.user_loader
@@ -123,7 +132,8 @@ def register():
                    json={'email': form.email.data,
                          'password': form.password.data,
                          'nickname': form.nickname.data}).json()
-        handle_error(res, 'register.html', 'Register', form=form)
+        if res.get('message', False):
+            return render_template('register.html', title='Register', form=form, message=res['message'])
         return redirect('/login')
     return render_template('register.html', title='Register', form=form)
 
@@ -152,26 +162,34 @@ def add_project():
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
                 res = post(f'http://{request.host}/api/tags', json={'tag': tag}).json()
-                handle_error(res, 'add_project.html', 'Add project', form=form)
+                if res.get('message', False):
+                    return render_template('add_project.html', title='Add project', form=form, message=res['message'])
                 additional_tags.append(res['id'])
         res_json = {'team_leader': current_user.id,
                     'title': form.title.data,
                     'description': form.description.data,
-                    'tags': ' '.join(map(str, form.tags.data + additional_tags))}
+                    'tags': ' '.join(map(str, form.tags.data + additional_tags)),
+                    'location': form.location.data}
         if form.image.data:
-            filename = get_filename(f'./static/img/{"_".join(form.title.data.strip().split()).lower()}')
+            filename = get_filename("_".join(form.title.data.strip().split()).lower())
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
         res = post(f'http://{request.host}/api/projects', json=res_json).json()
-        handle_error(res, 'add_project.html', 'Add project', form=form)
+        if res.get('message', False):
+            return render_template('add_project.html', title='Add project', form=form, message=res['message'])
         return redirect('/')
-    return render_template('add_project.html', title='Add project', form=form)
+    return render_template('add_project.html', title='Add project', form=form, remove_image=False)
 
 
 @app.route('/project/<project_id>')
 def project_page(project_id):  # Detailed info + actions
-    return render_template('project.html', title=f'Project {project_id}', project=get_project(project_id))
+    project = get_project(project_id)
+    loc_image = None
+    if project.get('ll', False) and project.get('spn', False):
+        loc_image = './static/img/location.png'
+        get_location_image(project['ll'], project['spn'], loc_image)
+    return render_template('project.html', title=f'Project {project_id}', project=project, loc_image=loc_image)
 
 
 @app.route('/edit_project/<project_id>', methods=['GET', 'POST'])
@@ -184,37 +202,44 @@ def edit_project(project_id):
     if request.method == "GET":  # restore project data
         form.title.data = project['title']
         form.description.data = project['description']
+        form.location.data = project['location']
         form.tags.data = project['tags']
     if form.validate_on_submit():
         additional_tags = []
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
                 res = post(f'http://{request.host}/api/tags', json={'tag': tag}).json()
-                handle_error(res, 'add_project.html', 'Edit project', form=form)
+                if res.get('message', False):
+                    return render_template('add_project.html', title='Edit project', form=form, message=res['message'])
                 additional_tags.append(res['id'])
         res_json = {'title': form.title.data,
                     'description': form.description.data,
-                    'tags': ' '.join(map(str, form.tags.data + additional_tags))}
-        if form.image.data:
+                    'tags': ' '.join(map(str, form.tags.data + additional_tags)),
+                    'location': form.location.data}
+        if form.remove_image.data:
+            res_json['image'] = ''
+            os.remove(project['image'])
+        elif form.image.data:  # to avoid pointless file writing
             if project['image']:  # overwrite image file if it already exists
                 filename = project['image']
             else:
-                filename = get_filename(f'./static/img/{"_".join(form.title.data.strip().split()).lower()}')
+                filename = get_filename("_".join(form.title.data.strip().split()).lower())
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
         res = post(f'http://{request.host}/api/projects/{project_id}', json=res_json).json()
-        handle_error(res, 'add_project.html', 'Edit project', form=form)
+        if res.get('message', False):
+            return render_template('add_project.html', title='Edit project', form=form, message=res['message'])
         return redirect(f'/project/{project_id}')
-    return render_template('add_project.html', title='Edit project', form=form)
+    return render_template('add_project.html', title='Edit project', form=form, remove_image=project['image'])
 
 
 @app.route('/delete_project/<project_id>')
 @login_required
 def delete_project(project_id):
     res = delete(f'http://{request.host}/api/projects/{project_id}').json()
-    if 'image' in res:
-        os.remove(res["image"])
+    if os.path.isfile(res['image']):
+        os.remove(res['image'])
     return redirect(url_for('index'))
 
 

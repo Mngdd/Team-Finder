@@ -27,40 +27,21 @@ h2 {
     border-radius: 10px;
 }
 
-.card {  /* :not(:first-child):not(:last-child) */
+.card {
   margin-top: 20px;
   margin-bottom: 20px;
 }
 
-.card .title {
-    text-align: center;
+.card .card-body .card-title {
+    display: inline;
 }
 
-.card .title a {
-    color: inherit;
-    text-decoration: none;
+.card .card-body .team-leader {
+    display: inline;
 }
 
-.card .team_leader {
-    margin-right: 20px;
-    text-align: right;
-    color: grey;
-}
-
-.card .tags {
-    width: fit-content;
-    border-radius: 10px;
-    padding-right: 5px;
-    padding-left: 5px;
-    margin-left: 10px;
-    text-align: center;
-    color: white;
-    background-color: steelblue;
-}
-
-.card .description {
-    margin-left: 10px;
-    margin-right: 10px;
+.card .card-body .card-text {
+    margin-top: 7px;
 }
 
 /* Search bar */
@@ -69,22 +50,26 @@ form.search-form {
     margin-top: 30px;
 }
 
-.search-bar {
-    display: inline-block;
-    width: 40%;
-    margin-right: 10px;
+.input-group {
+    margin-top: 7px;
 }
 
-.show_all {
+.search-bar {
     display: inline-block;
-    margin-right: 10px;
+    width: 70%;
+    margin-right: 20px;
+}
+
+.search-button {
+    width: 12%;
+    height: 38px;
 }
 
 /* Dropdown checklist */
 
 .dropdown-check-list {
     display: inline-block;
-    margin-right: 10px;
+    margin-right: 20px;
 }
 
 .dropdown-check-list .anchor {
@@ -161,14 +146,15 @@ form.search-form {
     margin-left: 65%;
 }
 
-.project-data .tags {
-    width: fit-content;
-    border-radius: 10px;
-    padding-right: 5px;
-    padding-left: 5px;
-    text-align: center;
-    color: white;
-    background-color: steelblue;
+.project-data .data-right .badge {
+    margin-bottom: 10px;
+}
+
+.project-data .data-right img {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    object-fit: cover;
 }
 
 

@@ -35,6 +35,9 @@ class TagsResource(Resource):
         abort_if_tag_not_found(tag_id)
         args = edit_tag_parser.parse_args()
         session = db_session.create_session()
+        if args['tags']:
+            if session.query(Tags).filter(Tags.tag == args['tag']).first():
+                abort(400, message=f"Tag {args['tag']} already exists")
         session.query(Tags).filter(Tags.id == tag_id).update({k: v for k, v in args.items() if v is not None})
         session.commit()
         session.close()
@@ -51,6 +54,8 @@ class TagsListResource(Resource):
     def post(self):
         args = add_tag_parser.parse_args()
         session = db_session.create_session()
+        if session.query(Tags).filter(Tags.tag == args['tag']).first():
+            abort(400, message=f"Tag {args['tag']} already exists")
         tag = Tags(**{k: v for k, v in args.items() if v is not None})
         session.add(tag)
         session.commit()

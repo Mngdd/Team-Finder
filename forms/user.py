@@ -22,7 +22,9 @@ class LoginForm(FlaskForm):
 class ProjectForm(FlaskForm):
     title = StringField('Project title', validators=[DataRequired()])
     description = TextAreaField('Project description', validators=[DataRequired()])
+    location = StringField('Project location (if applicable)')
     image = FileField('Image')
+    remove_image = BooleanField('Remove image')
     tags = SelectMultipleField('Tags', coerce=int)
     additional_tags = StringField('Additional tags')
     submit = SubmitField('Submit')
