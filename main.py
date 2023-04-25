@@ -87,15 +87,18 @@ def index():  # Main page displays available projects and search/filter form
                          get(f'http://{request.host}/api/tags').json()['tags']]
     projects = [project for project in get_project() if not project['archived']]
     if form.validate_on_submit():
-        if not form.show_all.data:
+        if 'clear' not in request.form:
             if form.tags.data:
                 projects = [project for project in projects if any(tag in project['tags'] for tag in form.tags.data)]
             if form.search.data:
-                projects = [project for project in projects if
-                            any(form.search.data.lower().strip() in
-                                (project[k].lower() if isinstance(project[k], str)
-                                 else list(map(lambda x: x.lower(), project[k]))) for k in
-                                ('team_leader_name', 'title', 'description', 'collaborators_names', 'tags_str'))]
+                try:  # оказывается поле поиска сохраняется, и если у нас поиск выдает 0 резов, оно может упасть
+                    projects = [project for project in projects if
+                                any(form.search.data.lower().strip() in
+                                    (project[k].lower() if isinstance(project[k], str)
+                                     else list(map(lambda x: x.lower(), project[k]))) for k in
+                                    ('team_leader_name', 'title', 'description', 'collaborators_names', 'tags_str'))]
+                except AttributeError:  # ниче страшного
+                        ...
         else:
             form.tags.data = None
             form.search.data = ''
