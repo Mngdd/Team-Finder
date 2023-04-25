@@ -23,6 +23,7 @@ class ProjectForm(FlaskForm):
     title = StringField('Project title', validators=[DataRequired()])
     description = TextAreaField('Project description', validators=[DataRequired()])
     location = StringField('Project location (if applicable)')
+    no_location = BooleanField('No location')
     image = FileField('Image')
     remove_image = BooleanField('Remove image')
     tags = SelectMultipleField('Tags', coerce=int)

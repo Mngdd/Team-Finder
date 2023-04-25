@@ -54,17 +54,18 @@ class ProjectsResource(Resource):
                     project.collaborators.remove(session.query(User).get(-user_id))
         if args['tags']:
             project.tags = [session.query(Tags).get(tag_id) for tag_id in map(int, args['tags'].split())]
-        try:
-            ll, spn = get_ll_span(args['location'])
-            location = geocode(args['location'])['metaDataProperty']['GeocoderMetaData']['text']
-            if args['location']:
-                project.ll = ll
-                project.spn = spn
-                project.location = location
-            else:
+        if args['location']:
+            try:
+                ll, spn = get_ll_span(args['location'])
+                location = geocode(args['location'])['metaDataProperty']['GeocoderMetaData']['text']
+                if args['location'] == 'no location':
+                    project.ll, project.spn, project.location = None, None, None
+                else:
+                    project.ll = ll
+                    project.spn = spn
+                    project.location = location
+            except RuntimeError:
                 project.ll, project.spn, project.location = None, None, None
-        except RuntimeError:
-            project.ll, project.spn, project.location = None, None, None
         if any(v is not None for k, v in args.items() if k not in ('collaborators', 'tags')):
             session.query(Project).filter(Project.id == project_id).update({k: v for k, v in args.items()
                                                                             if v is not None and k not in

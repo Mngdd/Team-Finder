@@ -179,7 +179,7 @@ def add_project():
         if res.get('message', False):
             return render_template('add_project.html', title='Add project', form=form, message=res['message'])
         return redirect('/')
-    return render_template('add_project.html', title='Add project', form=form, remove_image=False)
+    return render_template('add_project.html', title='Add project', action='Add', form=form, remove_image=False)
 
 
 @app.route('/project/<project_id>')
@@ -216,6 +216,8 @@ def edit_project(project_id):
                     'description': form.description.data,
                     'tags': ' '.join(map(str, form.tags.data + additional_tags)),
                     'location': form.location.data}
+        if form.no_location.data:
+            res_json['location'] = 'no location'
         if form.remove_image.data:
             res_json['image'] = ''
             os.remove(project['image'])
@@ -231,7 +233,8 @@ def edit_project(project_id):
         if res.get('message', False):
             return render_template('add_project.html', title='Edit project', form=form, message=res['message'])
         return redirect(f'/project/{project_id}')
-    return render_template('add_project.html', title='Edit project', form=form, remove_image=project['image'])
+    return render_template('add_project.html', title='Edit project', action='Edit',
+                           form=form, remove_image=project['image'])
 
 
 @app.route('/delete_project/<project_id>')
