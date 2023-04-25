@@ -28,7 +28,7 @@
 
 <p class="text-muted">Results found: {{projects|length}}</p>
 {% for project in projects%}
-    <div class="card" style="width: 48rem; margin-top:15px">
+    <div class="card" style="margin-top:15px">
       <div class="card-body">
             <h5 class="card-title" style='display:inline'>
                 <a href="/project/{{project['id']}}" class="text-dark">{{project['title']}}</a>
