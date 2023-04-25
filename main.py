@@ -30,8 +30,8 @@ def main():
 
 def transform_project_data(project):  # Transforms project data into useful info
     names = {user['id']: user['nickname'] for user in
-             get(f'http://{request.host}/api/users').json()['users']}
-    tags = {tag['id']: tag['tag'] for tag in get(f'http://{request.host}/api/tags').json()['tags']}
+             get(f'https://{request.host}/api/users').json()['users']}
+    tags = {tag['id']: tag['tag'] for tag in get(f'https://{request.host}/api/tags').json()['tags']}
     project['team_leader'] = int(project['team_leader'])
     project['team_leader_name'] = names[project['team_leader']]
     project['collaborators'] = list(map(int, project['collaborators'].split()))
@@ -42,10 +42,10 @@ def transform_project_data(project):  # Transforms project data into useful info
 
 def get_project(project_id=None):  # Returns usable info about project(s)
     if project_id is not None:
-        project = get(f'http://{request.host}/api/projects/{project_id}').json()['project']
+        project = get(f'https://{request.host}/api/projects/{project_id}').json()['project']
         transform_project_data(project)
         return project
-    projects = get(f'http://{request.host}/api/projects').json()['projects']
+    projects = get(f'https://{request.host}/api/projects').json()['projects']
     for project in projects:
         transform_project_data(project)
     return projects
@@ -66,7 +66,7 @@ def get_location_image(ll, spn, filename):  # write location image
         'pt': f'{ll},pm2bll',  # set marker on exact location
         'l': 'map'
     }
-    map_request = 'http://static-maps.yandex.ru/1.x/'
+    map_request = 'https://static-maps.yandex.ru/1.x/'
     response = get(map_request, params=params)
 
     if response:
@@ -84,7 +84,7 @@ def load_user(user_id):
 def index():  # Main page displays available projects and search/filter form
     form = FilterForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get(f'http://{request.host}/api/tags').json()['tags']]
+                         get(f'https://{request.host}/api/tags').json()['tags']]
     projects = [project for project in get_project() if not project['archived']]
     if form.validate_on_submit():
         if 'clear' not in request.form:
@@ -98,7 +98,7 @@ def index():  # Main page displays available projects and search/filter form
                                      else list(map(lambda x: x.lower(), project[k]))) for k in
                                     ('team_leader_name', 'title', 'description', 'collaborators_names', 'tags_str'))]
                 except AttributeError:  # ниче страшного
-                        ...
+                    ...
         else:
             form.tags.data = None
             form.search.data = ''
@@ -131,7 +131,7 @@ def register():
             return render_template('register.html', title='Register',
                                    form=form,
                                    message="Passwords don't match")
-        res = post(f'http://{request.host}/api/users',
+        res = post(f'https://{request.host}/api/users',
                    json={'email': form.email.data,
                          'password': form.password.data,
                          'nickname': form.nickname.data}).json()
@@ -159,12 +159,12 @@ def login():  # flask_login wouldn't let make it the RESTful way
 def add_project():
     form = ProjectForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get(f'http://{request.host}/api/tags').json()['tags']]
+                         get(f'https://{request.host}/api/tags').json()['tags']]
     if form.validate_on_submit():
         additional_tags = []
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
-                res = post(f'http://{request.host}/api/tags', json={'tag': tag}).json()
+                res = post(f'https://{request.host}/api/tags', json={'tag': tag}).json()
                 if res.get('message', False):
                     return render_template('add_project.html', title='Add project', form=form, message=res['message'])
                 additional_tags.append(res['id'])
@@ -178,7 +178,7 @@ def add_project():
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
-        res = post(f'http://{request.host}/api/projects', json=res_json).json()
+        res = post(f'https://{request.host}/api/projects', json=res_json).json()
         if res.get('message', False):
             return render_template('add_project.html', title='Add project', form=form, message=res['message'])
         return redirect('/')
@@ -200,7 +200,7 @@ def project_page(project_id):  # Detailed info + actions
 def edit_project(project_id):
     form = ProjectForm()
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
-                         get(f'http://{request.host}/api/tags').json()['tags']]
+                         get(f'https://{request.host}/api/tags').json()['tags']]
     project = get_project(project_id)
     if request.method == "GET":  # restore project data
         form.title.data = project['title']
@@ -211,7 +211,7 @@ def edit_project(project_id):
         additional_tags = []
         if form.additional_tags.data:  # add tags by user
             for tag in form.additional_tags.data.split(', '):
-                res = post(f'http://{request.host}/api/tags', json={'tag': tag}).json()
+                res = post(f'https://{request.host}/api/tags', json={'tag': tag}).json()
                 if res.get('message', False):
                     return render_template('add_project.html', title='Edit project', form=form, message=res['message'])
                 additional_tags.append(res['id'])
@@ -232,7 +232,7 @@ def edit_project(project_id):
             with open(filename, 'wb') as f:
                 f.write(form.image.data.read())
             res_json['image'] = filename
-        res = post(f'http://{request.host}/api/projects/{project_id}', json=res_json).json()
+        res = post(f'https://{request.host}/api/projects/{project_id}', json=res_json).json()
         if res.get('message', False):
             return render_template('add_project.html', title='Edit project', form=form, message=res['message'])
         return redirect(f'/project/{project_id}')
@@ -243,7 +243,7 @@ def edit_project(project_id):
 @app.route('/delete_project/<project_id>')
 @login_required
 def delete_project(project_id):
-    res = delete(f'http://{request.host}/api/projects/{project_id}').json()
+    res = delete(f'https://{request.host}/api/projects/{project_id}').json()
     if os.path.isfile(res['image']):
         os.remove(res['image'])
     return redirect(url_for('index'))
@@ -252,7 +252,7 @@ def delete_project(project_id):
 @app.route('/leave_project/<project_id>')
 @login_required
 def leave_project(project_id):
-    post(f'http://{request.host}/api/projects/{project_id}',
+    post(f'https://{request.host}/api/projects/{project_id}',
          json={'collaborators': str(-current_user.id)})
     return redirect(f'/project/{project_id}')
 
@@ -260,7 +260,7 @@ def leave_project(project_id):
 @app.route('/collaborate/<project_id>')
 @login_required
 def collaborate(project_id):
-    post(f'http://{request.host}/api/projects/{project_id}',
+    post(f'https://{request.host}/api/projects/{project_id}',
          json={'collaborators': str(current_user.id)})
     return redirect(f'/project/{project_id}')
 
@@ -269,7 +269,7 @@ def collaborate(project_id):
 @login_required
 def archive(project_id):
     archived = get_project(project_id)['archived']
-    post(f'http://{request.host}/api/projects/{project_id}',
+    post(f'https://{request.host}/api/projects/{project_id}',
          json={'archived': not archived})
     return redirect(f'/project/{project_id}')
 
