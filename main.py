@@ -86,6 +86,9 @@ def index():  # Main page displays available projects and search/filter form
     form.tags.choices = [(int(tag['id']), tag['tag']) for tag in
                          get(f'http://{request.host}/api/tags').json()['tags']]
     projects = [project for project in get_project() if not project['archived']]
+    if 'save' in request.form:
+        print()
+
     if form.validate_on_submit():
         if 'clear' not in request.form:
             if form.tags.data:
@@ -108,23 +111,11 @@ def index():  # Main page displays available projects and search/filter form
 
 # TODO: Мооожет быть в будущем просто дописать эту функцию.... надо просто айди проекта получать
 # TODO: потом просто список таких проектов и возваращать
-# @app.route('/saved/<nickname>')
-# @login_required
-# def user_saved(nickname, status):  # Displays created, collaborative and archived projects
-#     projects = [i for i in list(map(int, current_user.saved.split()))]
-#     print(current_user.nickname)
-#     if nickname != current_user.nickname or status not in ('created', 'collaborative', 'archived'):
-#         return redirect('/')
-#     if status == 'created':
-#         projects = [project for project in get_project()
-#                     if project['team_leader'] == current_user.id and not project['archived']]
-#     elif status == 'collaborative':
-#         projects = [project for project in get_project()
-#                     if current_user.id in project['collaborators'] and not project['archived']]
-#     else:
-#         projects = [project for project in get_project()
-#                     if project['team_leader'] == current_user.id and project['archived']]
-#     return render_template("saved.html", projects=projects)
+@app.route('/saved/<nickname>')
+@login_required
+def user_saved(nickname, status):  # Displays created, collaborative and archived projects
+    projects = [get_project(i) for i in list(map(int, current_user.saved.split()))]
+    return render_template("saved.html", projects=projects)
 
 
 @app.route('/projects/<nickname>/<status>')

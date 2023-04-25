@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<h2>Saved projects</h2>
+
+<p class="text-muted">Results found: {{projects|length}}</p>
+{% for project in projects%}
+    <div class="card" style="margin-top:15px">
+      <div class="card-body">
+            <h5 class="card-title" style='display:inline'>
+                <a href="/project/{{project['id']}}" class="text-dark">{{project['title']}}</a>
+            </h5>
+            <p class="text-secondary float-right" style='display:inline'>by {{project['team_leader_name']}}</p>
+          <p class="text-secondary mb-0">location: {{project['location']}}</p>
+          {% for tag in project['tags_str']%}
+            <a href="#"><span class="badge badge-pill badge-secondary">{{tag}}</span></a>
+          {% endfor %}
+          <!--<h6 class="card-subtitle mb-2 text-muted">тут типа чета написать</h6>-->
+        <p class="card-text" style="margin-top:7px">{{project['description']}}</p>
+        <a href="#" class="card-link">Remove from saved</a>
+        <a href="#" class="card-link">Message</a>
+      </div>
+    </div>
+
+{% endfor %}
+
+{% endblock %}

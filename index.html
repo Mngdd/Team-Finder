@@ -28,7 +28,7 @@
 
 <p class="text-muted">Results found: {{projects|length}}</p>
 {% for project in projects%}
-    <div class="card" style="width: 48rem; margin-top:15px">
+    <div class="card" style="margin-top:15px">
       <div class="card-body">
             <h5 class="card-title" style='display:inline'>
                 <a href="/project/{{project['id']}}" class="text-dark">{{project['title']}}</a>
@@ -40,8 +40,8 @@
           {% endfor %}
           <!--<h6 class="card-subtitle mb-2 text-muted">тут типа чета написать</h6>-->
         <p class="card-text" style="margin-top:7px">{{project['description']}}</p>
-        <a href="#" class="card-link">Открыть</a>
-        <a href="#" class="card-link">Написать</a>
+          <button type="submit" name="clear" value="" class="btn btn-danger card-link"><i class="fa fa-heart-o">Save</i></button>
+        <a href="#" class="card-link">Message</a>
       </div>
     </div>
 
