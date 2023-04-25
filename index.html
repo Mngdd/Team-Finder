@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<h2>Available projects</h2>
+<form action="{{ url_for('index') }}" method="POST" class="search-form">
+    <div class="input-group mb-3">
+    {{ form.search(type="search", class="form-control", placeholder="Search") }}
+    {{ form.submit(class="btn btn-primary my-2 my-sm-0", type="submit") }}
+    {{ form.hidden_tag() }}
+
+    <div class="btn-group">
+      <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Tags
+      </button>
+      <div class="dropdown-menu">
+        {{ form.tags(class="items") }}
+      </div>
+        <button type="submit" name="clear" value="" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+    </div>
+    </div>
+<!--    <button type="button" class="btn btn-primary position-relative">-->
+<!--      <span class="badge bg-secondary">Secondary</span>-->
+<!--    </button>-->
+</form>
+
+
+<p class="text-muted">Results found: {{projects|length}}</p>
+{% for project in projects%}
+    <div class="card" style="width: 48rem; margin-top:15px">
+      <div class="card-body">
+            <h5 class="card-title" style='display:inline'>
+                <a href="/project/{{project['id']}}" class="text-dark">{{project['title']}}</a>
+            </h5>
+            <p class="text-secondary float-right" style='display:inline'>by {{project['team_leader_name']}}</p>
+          <p class="text-secondary mb-0">location: {{project['location']}}</p>
+          {% for tag in project['tags_str']%}
+            <a href="#"><span class="badge badge-pill badge-secondary">{{tag}}</span></a>
+          {% endfor %}
+          <!--<h6 class="card-subtitle mb-2 text-muted">тут типа чета написать</h6>-->
+        <p class="card-text" style="margin-top:7px">{{project['description']}}</p>
+        <a href="#" class="card-link">Открыть</a>
+        <a href="#" class="card-link">Написать</a>
+      </div>
+    </div>
+
+{% endfor %}
+<script>
+        var checkList = document.getElementById('list1');
+        checkList.getElementsByClassName('anchor')[0].onclick = function (evt) {
+            if (checkList.classList.contains('visible'))
+                checkList.classList.remove('visible');
+            else
+                checkList.classList.add('visible');
+        }
+    </script>
+{% endblock %}
