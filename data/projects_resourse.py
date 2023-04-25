@@ -100,7 +100,17 @@ class ProjectsListResource(Resource):
         if args['tags']:
             project.tags = [session.query(Tags).get(tag_id) for tag_id in map(int, args['tags'].split())]
         if args['location']:
-            project.ll, project.spn = get_ll_span(args['location'])
+            try:
+                ll, spn = get_ll_span(args['location'])
+                location = geocode(args['location'])['metaDataProperty']['GeocoderMetaData']['text']
+                if args['location'] == 'no location':
+                    project.ll, project.spn, project.location = None, None, None
+                else:
+                    project.ll = ll
+                    project.spn = spn
+                    project.location = location
+            except RuntimeError:
+                project.ll, project.spn, project.location = None, None, None
         session.add(project)
         session.commit()
         session.close()
